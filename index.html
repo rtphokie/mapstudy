@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <title>MapStudy</title>
+    <style>
+       #map {
+        height: 800px;
+        width: 100%;
+       }
+    </style>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script
+
+  </head>
+  <body>
+    <p id="msg">Loading map.... </p>
+    <div id="map"></div>
+    <script>
+function calcCrow($lat1, $lon1, $lat2, $lon2){
+        $R = 6371; // km
+        $dLat = toRad($lat2-$lat1);
+        $dLon = toRad($lon2-$lon1);
+        $lat1 = toRad($lat1);
+        $lat2 = toRad($lat2);
+
+        $a = sin($dLat/2) * sin($dLat/2) +sin($dLon/2) * sin($dLon/2) * cos($lat1) * cos($lat2); 
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a)); 
+        $d = $R * $c;
+        return $d;
+}
+
+// Converts numeric degrees to radians
+function toRad($Value) 
+{
+    return $Value * pi() / 180;
+}
+    </script>
+
+    <script>
+      var x = document.getElementById("msg");
+
+      var options = {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 1000
+      };
+
+      function error(){
+         var x = document.getElementById("msg");
+         x.innerHTML = "click roughly where you are located"
+         var crd = {latitude: 37.0, longitude: -98.5}
+         initMap(crd, 4);
+      }
+
+      function success(pos){
+          var crd = pos.coords;
+          console.log('Your current position is:');
+          console.log(`Latitude : ${crd.latitude}`);
+          console.log(`Longitude: ${crd.longitude}`);
+          console.log(`More or less ${crd.accuracy} meters.`);
+          mapStyle = null;
+          var x = document.getElementById("msg");
+          x.innerHTML = "Click where you are located on this map, be as accurate as possible."
+          initMap(crd, 7);
+      }
+
+      function doit(){
+         navigator.geolocation.getCurrentPosition(success, error, options);
+      }
+
+      function initMap(crd, zoom) {
+        $.get( 'cleangrey.js', function( data ) {
+           if (data) {
+             mapStyle = JSON.parse(data);
+             var myloc = {lat: crd.latitude, lng: crd.longitude};
+             console.log('loaded mapstyle');
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: zoom,
+            styles: mapStyle,
+            center: myloc });
+        console.log('created map, zoom level ' + zoom);
+        var ctaLayer = new google.maps.KmlLayer({
+                 url: 'https://www.nohrsc.noaa.gov/data/vector/master/cnt_us.kmz',
+                 map: map,
+                 preserveViewport: true
+              });
+        map.addListener('click', function(e) { placeMarker(e.latLng, map); });
+           }
+        });
+      }
+
+
+      function placeMarker(position, map) {
+          var marker = new google.maps.Marker({
+              position: position,
+              map: map
+          });
+          console.log('clicked at ' + position)
+          map.panTo(position);
+}
+
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCX5p5D6Pgs0v25ioL0HFmYVAawx7etBaE&callback=doit" async defer></script>
+  </body>
+</html>
+
