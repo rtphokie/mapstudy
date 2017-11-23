@@ -14,24 +14,17 @@
     <p id="msg">Loading map.... </p>
     <div id="map"></div>
     <script>
-function calcCrow($lat1, $lon1, $lat2, $lon2){
-        $R = 6371; // km
-        $dLat = toRad($lat2-$lat1);
-        $dLon = toRad($lon2-$lon1);
-        $lat1 = toRad($lat1);
-        $lat2 = toRad($lat2);
-
-        $a = sin($dLat/2) * sin($dLat/2) +sin($dLon/2) * sin($dLon/2) * cos($lat1) * cos($lat2); 
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a)); 
-        $d = $R * $c;
-        return $d;
-}
-
-// Converts numeric degrees to radians
-function toRad($Value) 
-{
-    return $Value * pi() / 180;
-}
+        function distance(lat1, lon1, lat2, lon2) {
+        	var radlat1 = Math.PI * lat1/180
+        	var radlat2 = Math.PI * lat2/180
+        	var theta = lon1-lon2
+        	var radtheta = Math.PI * theta/180
+        	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+        	dist = Math.acos(dist)
+        	dist = dist * 180/Math.PI
+        	dist = dist * 60 * 1.1515
+        	return dist
+        }
     </script>
 
     <script>
@@ -82,19 +75,25 @@ function toRad($Value)
                  map: map,
                  preserveViewport: true
               });
-        map.addListener('click', function(e) { placeMarker(e.latLng, map); });
+        map.addListener('click', function(e) { placeMarker(e.latLng, map, crd); });
            }
         });
       }
 
 
-      function placeMarker(position, map) {
+      function placeMarker(position, map, detected) {
           var marker = new google.maps.Marker({
               position: position,
               map: map
           });
           console.log('clicked at ' + position)
           map.panTo(position);
+          var foo = distance(position.lat(), position.lng(), detected.latitude, detected.longitude);
+          console.log("clicked lon" + position.lat())
+          console.log("clicked lon" + position.lng())
+          console.log("detected lng" + detected.latitude)
+          console.log("detected lng" + detected.longitude)
+          alert("you were off by " + foo + " miles");
 }
 
 
